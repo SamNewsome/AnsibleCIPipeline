@@ -1,4 +1,4 @@
-ec2_keypair: "snewsome"
+ec2_keypair: "REDACTED"
 ec2_security_group: "{{ jenkins.group_id }}"
 ec2_instance_type: "t2.micro"
 ec2_image: "ami-eceba695"
