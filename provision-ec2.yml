@@ -1,0 +1,10 @@
+- hosts: localhost
+  connection: local
+  become: yes
+  gather_facts: false
+  user: root
+  pre_tasks:
+   - include_vars: ec2_vars/jenkinserver.yml
+  roles:
+   - security-group-ec2
+   - provision-ec2 

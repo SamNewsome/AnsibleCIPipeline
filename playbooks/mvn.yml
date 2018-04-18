@@ -1,0 +1,9 @@
+- hosts: all
+  remote_user: ubuntu
+  sudo: yes
+
+  tasks:
+  - name: Install maven
+    apt:
+      name: maven
+      state: present

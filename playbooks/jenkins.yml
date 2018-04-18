@@ -1,0 +1,45 @@
+- hosts: all
+  remote_user: ubuntu
+  sudo: yes
+  vars:
+ 
+    download_key: https://pkg.jenkins.io/debian/jenkins-ci.org.key
+
+  tasks:
+  
+  - apt_key:
+      url: '{{download_key}}'
+      state: present
+
+  - name: echo
+    command: sh -c 'echo deb https://pkg.jenkins.io/debian-stable binary/ | sudo tee /etc/apt/sources.list.d/jenkins.list'
+
+  - name: update
+    command: apt-get update
+
+  - name: Install jenkins
+    apt:
+      name: jenkins
+      state: present
+  
+  - name: Start jenkins
+    systemd: state=started name=jenkins
+
+  - name: Enable ufw
+    command: ufw enable
+
+  - name: Activate firewall
+    ufw:
+      rule: allow
+      name: OpenSSH
+      state: enabled
+
+  - name: Open port 8080
+    ufw:
+      rule: allow
+      port: 8080
+  
+  - name: Login as the Jenkins user
+    command: su jenkins -s /bin/bash
+    command: ssh-keygen
+
