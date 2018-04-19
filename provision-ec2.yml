@@ -3,8 +3,13 @@
   become: yes
   gather_facts: false
   user: root
+  vars:
+    download_key: https://pkg.jenkins.io/debian/jenkins-ci.org.key
   pre_tasks:
-   - include_vars: ec2_vars/jenkinserver.yml
+   - include_vars: ec2_vars/jenkinsserver.yml
+
   roles:
+   - dependencies
    - security-group-ec2
-   - provision-ec2 
+   - provision-ec2
+    

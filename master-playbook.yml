@@ -1,0 +1,4 @@
+#- import_playbook: provision-ec2.yml
+#- import_playbook: playbooks/java.yml
+#- import_playbook: playbooks/mvn.yml
+- import_playbook: playbooks/jenkins.yml

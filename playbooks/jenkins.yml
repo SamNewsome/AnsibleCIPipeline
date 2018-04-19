@@ -1,12 +1,18 @@
-- hosts: all
+- hosts: launched
   remote_user: ubuntu
   sudo: yes
   vars:
- 
+    
+    JAVA_OPTIONS: "-Djava.awt.headless=true -Djenkins.install.runSetupWizard=false"
     download_key: https://pkg.jenkins.io/debian/jenkins-ci.org.key
 
   tasks:
   
+  - name: install default-jre
+    apt:
+      name: openjdk-8-jre
+      state: present
+
   - apt_key:
       url: '{{download_key}}'
       state: present
@@ -21,10 +27,15 @@
     apt:
       name: jenkins
       state: present
-  
-  - name: Start jenkins
-    systemd: state=started name=jenkins
 
+  - name: Change Jenkins options
+    lineinfile:
+      dest=/etc/default/jenkins
+      regexp=^JENKINS_JAVA_OPTIONS=
+      line=JENKINS_JAVA_OPTIONS="{{JAVA_OPTIONS}}"
+    become: true
+
+  
   - name: Enable ufw
     command: ufw enable
 
@@ -38,8 +49,52 @@
     ufw:
       rule: allow
       port: 8080
+
+#  - name: start jenkins
+#    service: name=jenkins state=started
+
+  - name: Disable Security
+    lineinfile:
+      dest: /var/lib/jenkins/config.xml
+      regexp: '<useSecurity>'
+      line: '  <useSecurity>"true</useSecurity>"'
+
+  - name: Disable Security
+    lineinfile:
+      dest: /var/lib/jenkins/config.xml
+      regexp: "<authorizationStrategy"
+      state: absent
+    
+  - name: Disable Security
+    lineinfile:
+      dest: /var/lib/jenkins/config.xml
+      regexp: "{{ item }}"
+      state: absent
+    with_items:
+      - "{ regexp: '<authorizationStrategy' }"
+      - "{ regexp: '  <denyAnonymousReadAccess>' }"
+      - "{ regexp: '</authorizationStrategy>' }"
+      - "{ regexp: '<securityRealm class' }"
+      - "{ regexp: '  <disableSignup>true' }"
+      - "{ regexp: '  <enableCaptcha>false</enableCaptcha>' }"
+      - "{ regexp: '</securityRealm>' }"
+
+
+  - name: Configure JVM Arguments
+    lineinfile:
+      dest: /etc/default/jenkins
+      regexp: '^JAVA_ARGS='
+      line: 'JAVA_ARGS="-Djava.awt.headless=true -Djenkins.install.runSetupWizard=false"'
+    notify: restart jenkins
   
-  - name: Login as the Jenkins user
-    command: su jenkins -s /bin/bash
-    command: ssh-keygen
+  - name: "Turn off Jenkins setup wizard"
+    lineinfile:
+        dest: /etc/init.d/jenkins
+        regexp: '^JAVA_ARGS='
+        line: 'JAVA_ARGS="-Djava.awt.headless=true -Djenkins.install.runSetupWizard=false"'
+        insertbefore: '^DAEMON_ARGS='
+    notify: restart jenkins
+
+  - name: restart jenkins
+    service: name=jenkins state=restarted
 

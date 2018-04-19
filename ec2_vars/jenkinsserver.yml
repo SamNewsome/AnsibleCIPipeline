@@ -8,3 +8,5 @@ ec2_tag_Name: "Jenkins"
 ec2_tag_Type: "Jenkins"
 ec2_tag_Environment: "production"
 ec2_volume_size: 8
+download_key: "https://pkg.jenkins.io/debian/jenkins-ci.org.key"
+

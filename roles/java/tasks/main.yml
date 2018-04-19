@@ -1,0 +1,9 @@
+- name: upgrade
+  command: apt-get upgrade -y 
+
+- name: update
+  command: apt-get update -y
+
+- name: Install java
+  command: apt-get install default-jdk -y
+  command: apt-get install default-jre -y

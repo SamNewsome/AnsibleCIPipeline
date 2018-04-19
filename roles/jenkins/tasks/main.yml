@@ -1,0 +1,44 @@
+- apt_key:
+    url: '{{download_key}}'
+    state: present
+
+- name: echo
+  command: sh -c 'echo deb https://pkg.jenkins.io/debian-stable binary/ | sudo tee /etc/apt/sources.list.d/jenkins.list'
+
+- name: update
+  command: apt-get update
+
+- name: Install jenkins
+  command: apt-get install jenkins
+
+#- name: Start jenkins
+#  systemd: state=started name=jenkins
+
+- name: Enable ufw
+  command: ufw enable
+
+- name: Activate firewall
+  ufw:
+    rule: allow
+    name: OpenSSH
+    state: enabled
+
+- name: Open port 8080
+  ufw:
+    rule: allow
+    port: 8080
+
+- name: "Turn off Jenkins setup wizard"
+  lineinfile:
+      dest: /etc/init.d/jenkins
+      regexp: '^JAVA_ARGS='
+      line: 'JAVA_ARGS="-Djava.awt.headless=true -Djenkins.install.runSetupWizard=false"'
+      insertbefore: '^DAEMON_ARGS='
+  notify: restart jenkins
+
+- name: restart jenkins
+  service: name=jenkins state=restarted
+
+#- name: Login as the Jenkins user
+#  command: su jenkins -s /bin/bash
+#  command: ssh-keygen
