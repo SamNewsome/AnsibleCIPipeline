@@ -50,14 +50,18 @@
       rule: allow
       port: 8080
 
-#  - name: start jenkins
-#    service: name=jenkins state=started
+  - name: start jenkins
+    service: name=jenkins state=started
+
+  - name: Wait for file structure to load
+    wait_for:
+      path: /var/lib/jenkins/config.xml
 
   - name: Disable Security
     lineinfile:
       dest: /var/lib/jenkins/config.xml
       regexp: '<useSecurity>'
-      line: '  <useSecurity>"true</useSecurity>"'
+      line: '  <useSecurity>true</useSecurity>'
 
   - name: Disable Security
     lineinfile:
@@ -68,24 +72,39 @@
   - name: Disable Security
     lineinfile:
       dest: /var/lib/jenkins/config.xml
-      regexp: "{{ item }}"
+      regexp: "  <denyAnonymousReadAccess>"
       state: absent
-    with_items:
-      - "{ regexp: '<authorizationStrategy' }"
-      - "{ regexp: '  <denyAnonymousReadAccess>' }"
-      - "{ regexp: '</authorizationStrategy>' }"
-      - "{ regexp: '<securityRealm class' }"
-      - "{ regexp: '  <disableSignup>true' }"
-      - "{ regexp: '  <enableCaptcha>false</enableCaptcha>' }"
-      - "{ regexp: '</securityRealm>' }"
 
-
-  - name: Configure JVM Arguments
+  - name: Disable Security
     lineinfile:
-      dest: /etc/default/jenkins
-      regexp: '^JAVA_ARGS='
-      line: 'JAVA_ARGS="-Djava.awt.headless=true -Djenkins.install.runSetupWizard=false"'
-    notify: restart jenkins
+      dest: /var/lib/jenkins/config.xml
+      regexp: "</authorizationStrategy>"
+      state: absent
+
+  - name: Disable Security
+    lineinfile:
+      dest: /var/lib/jenkins/config.xml
+      regexp: "<securityRealm class"
+      state: absent
+
+  - name: Disable Security
+    lineinfile:
+      dest: /var/lib/jenkins/config.xml
+      regexp: "  <disableSignup>true"
+      state: absent
+
+  - name: Disable Security
+    lineinfile:
+      dest: /var/lib/jenkins/config.xml
+      regexp: "  <enableCaptcha>false</enableCaptcha>"
+      state: absent
+
+  - name: Disable Security
+    lineinfile:
+      dest: /var/lib/jenkins/config.xml
+      regexp: "</securityRealm>"
+      state: absent
+
   
   - name: "Turn off Jenkins setup wizard"
     lineinfile:
@@ -93,7 +112,6 @@
         regexp: '^JAVA_ARGS='
         line: 'JAVA_ARGS="-Djava.awt.headless=true -Djenkins.install.runSetupWizard=false"'
         insertbefore: '^DAEMON_ARGS='
-    notify: restart jenkins
 
   - name: restart jenkins
     service: name=jenkins state=restarted

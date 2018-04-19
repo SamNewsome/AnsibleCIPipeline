@@ -4,21 +4,27 @@
 
   tasks:
 
+  - name: Update
+    command: apt-get -y -q update
+
   - name: Upgrade
-    command: apt-get upgrade -y
+    command: apt-get -y -q upgrade
+
+  - name: install software properties
+    command: apt-get -y -q install software-properties-common htop
 
   - name: add repo
-    command: add-apt-repository ppa:webupd8team/java -y
+    command: add-apt-repository ppa:webupd8team/java
 
   - name: Update
-    command: apt-get update -y
+    command: apt-get -y -q update
+
+  - name: Make installer silent
+    shell: echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections
 
   - name: Install java
-    apt:
-      name: oracle-java8-installer
-      state: present
+    command: apt-get -y -q install oracle-java8-installer
     
   - name: Set up environment variables
-    apt:
-      name: oracle-java8-set-default
+    command: update-java-alternatives -s java-8-oracle
 
